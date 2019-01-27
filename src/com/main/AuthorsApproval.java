@@ -23,7 +23,12 @@ public class AuthorsApproval {
 		this.sourceFolder = sourceFolder;
 		loadFiles();
 	}
-	
+	/**
+	 * Triggers the files approval checking
+	 * @param owners
+	 * @param changedFiles
+	 * @return boolean meaning if it was approved or not
+	 */
 	public boolean checkApproval(List<String> owners, List<String> changedFiles){		
 		boolean approved = true;		
 		for(String changedFile: changedFiles){
@@ -45,6 +50,12 @@ public class AuthorsApproval {
 		return approved;
 	}
 	
+	/**
+	 * Checks if the informed file is approved as well as the files which depends on it recursively. 
+	 * @param owners
+	 * @param fileSetting
+	 * @return boolean meaning if it was approved or not
+	 */
 	private boolean isApproved(List<String> owners, FileSettings fileSetting){
 		boolean approved = false;
 		
@@ -66,6 +77,9 @@ public class AuthorsApproval {
 		return approved;
 	}
 	
+	/**
+	 * Triggers the build of FileSetting with their owners and dependencies
+	 */
 	private void loadFiles(){
 		filesToApprove = new HashSet<>();
 		
@@ -73,12 +87,18 @@ public class AuthorsApproval {
 		
 		if(file.exists()){
 			Set<String> owners = new HashSet<>();
-			addList(file, owners, "OWNERS");
+			readFileContentAsList(file, owners, "OWNERS");
 			file = new File(this.sourceFolder);
 			buildFileTree(filesToApprove, file, owners);
 		}		
 	}
 	
+	/**
+	 * Reads directories and files building in memory files owners and dependencies
+	 * @param files
+	 * @param file
+	 * @param owners
+	 */
 	private void buildFileTree(Set<FileSettings> files, File file, Set<String> owners){
 		try {
 			Set<String> parentOwners = new HashSet<>();
@@ -89,14 +109,20 @@ public class AuthorsApproval {
 				}
 			}else if(file.getName().contains(".java")){
 				parentOwners.addAll(owners);
-				addFileSetting(files, file, parentOwners);
+				createOrUpdateFileSetting(files, file, parentOwners);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private void addList(File file, Set<String> list, String fileName){
+	/**
+	 * Reads all file contents as a Set of data
+	 * @param file
+	 * @param list
+	 * @param fileName
+	 */
+	private void readFileContentAsList(File file, Set<String> list, String fileName){
 		File[] dataFile = file.listFiles((dir, name) -> name.equals(fileName));
 		if(dataFile != null && dataFile.length > 0){	
 			for(File owner: dataFile ){
@@ -111,7 +137,13 @@ public class AuthorsApproval {
 		}
 	}
 	
-	private void addFileSetting(Set<FileSettings> files, File file, Set<String> owners){
+	/**
+	 * Creates or Updates a FileSetting with it's name, owners and the impacted files when it has any changes 
+	 * @param files
+	 * @param file
+	 * @param owners
+	 */
+	private void createOrUpdateFileSetting(Set<FileSettings> files, File file, Set<String> owners){
 		String fileName = file.getPath().toString().replace("\\", "");
 		Optional<FileSettings> fileSetting = files.stream()
 		.filter((f)-> {			
@@ -124,11 +156,11 @@ public class AuthorsApproval {
 			fileSetting.get().getOwners().addAll(owners);
 		}else{			
 			Set<String> _owners = new HashSet<>();
-			addList(file.getParentFile(), _owners, "OWNERS");
+			readFileContentAsList(file.getParentFile(), _owners, "OWNERS");
 			_owners.addAll(owners);
 			
 			Set<String> _dependencies = new HashSet<>();
-			addList(file.getParentFile(), _dependencies, "DEPENDENCIES");
+			readFileContentAsList(file.getParentFile(), _dependencies, "DEPENDENCIES");
 			_dependencies = _dependencies.stream().map(dep -> dep.replace("/", "")).collect(Collectors.toSet());
 			
 			FileSettings file_setting = new FileSettings(fileName.substring(1), _owners, new HashSet<FileSettings>());
@@ -137,7 +169,13 @@ public class AuthorsApproval {
 			
 		}
 	}
-	
+	/**
+	 * Builds the relation between dependencies and FileSettings impacted files. 
+	 * It makes it easier to find those files which needs to have it's approval checked when there are changes on the file.  
+	 * @param current
+	 * @param files
+	 * @param dependencies
+	 */
 	private void getImpactedFiles(FileSettings current, Set<FileSettings> files, Set<String> dependencies){		
 		dependencies.forEach(dep -> {
 			if(!current.getName().contains(dep)){
@@ -158,6 +196,10 @@ public class AuthorsApproval {
 		});
 	}
 
+	/**
+	 * Get method to make easier the unit tests of loading files, owners and dependencies relations.
+	 * @return Set<FileSettings> meaning all files and it's owners and related files
+	 */
 	public Set<FileSettings> getFilesToApprove(){
 		return this.filesToApprove;
 	}
