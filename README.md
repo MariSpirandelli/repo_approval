@@ -21,7 +21,10 @@
 - `validate_approvals --approvers <file_owners_names> --changed-files <files_path>`
 - `exit`
 
-> Both file_owners_names and files_path must be comma separated when more than one is informed.
+
+> **Both file_owners_names and files_path must be comma separated when more than one is informed. **
+
+
 #### The application will only finish if you press a wrong command and/or the 'exit' command. Other wise it will be waiting for new approval command to be inserted.
 
 ### Command Example
