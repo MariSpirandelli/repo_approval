@@ -12,10 +12,10 @@ import org.junit.Test;
 import com.entity.FileSettings;
 
 public class AuthorsApprovalFileTreeTest extends AuthorsTest{
-
+	
 	@Test
 	public void FileTreeSuccesstest() {
-		Set<FileSettings> filesToApprove = authorsApproval.getFilesToApprove();		
+			
 		FileSettings file = filesToApprove.stream()
 				.filter(f -> f.getName().equals("testscomclientfollowFollowTest.java"))
 				.findFirst()
@@ -33,7 +33,6 @@ public class AuthorsApprovalFileTreeTest extends AuthorsTest{
 	
 	@Test
 	public void OwnersFileTreeFailtest() {
-		Set<FileSettings> filesToApprove = authorsApproval.getFilesToApprove();		
 		FileSettings file = filesToApprove.stream()
 				.filter(f -> f.getName().equals("testscomclientfollowFollowTest.java"))
 				.findFirst()
@@ -46,7 +45,6 @@ public class AuthorsApprovalFileTreeTest extends AuthorsTest{
 	
 	@Test
 	public void ImpactedFilesFileTreeFailtest() {
-		Set<FileSettings> filesToApprove = authorsApproval.getFilesToApprove();		
 		FileSettings file = filesToApprove.stream()
 				.filter(f -> f.getName().equals("testscomclientfollowFollowTest.java"))
 				.findFirst()

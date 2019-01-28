@@ -4,10 +4,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import com.business.AuthorsApproval;
+import com.business.FileTreeLoader;
+
 public class Main {
 
 	public static void main(String[] args) {
-		AuthorsApproval authorsApproval = new AuthorsApproval("./src");
+		FileTreeLoader fileTreeLoader = new FileTreeLoader("./src");		
+		AuthorsApproval authorsApproval = new AuthorsApproval(fileTreeLoader.loadFiles());
 		
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("$ ");

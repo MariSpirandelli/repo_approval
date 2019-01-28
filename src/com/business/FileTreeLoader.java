@@ -1,4 +1,4 @@
-package com.main;
+package com.business;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,75 +13,19 @@ import java.util.stream.Collectors;
 
 import com.entity.FileSettings;
 
-public class AuthorsApproval {
-	
-	private Set<FileSettings> filesToApprove;
+public class FileTreeLoader {
 	
 	private String sourceFolder;
 	
-	public AuthorsApproval(String sourceFolder){
+	public FileTreeLoader(String sourceFolder){
 		this.sourceFolder = sourceFolder;
-		loadFiles();
-	}
-	/**
-	 * Triggers the files approval checking
-	 * @param owners
-	 * @param changedFiles
-	 * @return boolean meaning if it was approved or not
-	 */
-	public boolean checkApproval(List<String> owners, List<String> changedFiles){		
-		boolean approved = true;		
-		for(String changedFile: changedFiles){
-			Optional<FileSettings> fileSetting = filesToApprove.stream()
-					.filter(file -> 
-						file.getName().contains(changedFile.replace("/", ""))
-					)
-					.findFirst();
-			if(fileSetting.isPresent()){
-				approved = isApproved(owners, fileSetting.get());
-				if(!approved){
-					break;
-				}
-			}else{
-				approved = false;
-				break;
-			}
-		}
-		return approved;
-	}
-	
-	/**
-	 * Checks if the informed file is approved as well as the files which depends on it recursively. 
-	 * @param owners
-	 * @param fileSetting
-	 * @return boolean meaning if it was approved or not
-	 */
-	private boolean isApproved(List<String> owners, FileSettings fileSetting){
-		boolean approved = false;
-		
-		for(String owner: owners){
-			if(fileSetting.getOwners().contains(owner)){
-				approved = true;
-				break;
-			}
-		}
-			
-		if(approved && !fileSetting.getImpactedFiles().isEmpty()){
-			for(FileSettings impactedFile: fileSetting.getImpactedFiles()){
-				approved = isApproved(owners, impactedFile);
-				if(!approved){
-					break;
-				}
-			}
-		}		
-		return approved;
 	}
 	
 	/**
 	 * Triggers the build of FileSetting with their owners and dependencies
 	 */
-	private void loadFiles(){
-		filesToApprove = new HashSet<>();
+	public Set<FileSettings> loadFiles(){
+		Set<FileSettings> filesToApprove = new HashSet<>();
 		
 		File file = new File("./");
 		
@@ -90,7 +34,9 @@ public class AuthorsApproval {
 			readFileContentAsList(file, owners, "OWNERS");
 			file = new File(this.sourceFolder);
 			buildFileTree(filesToApprove, file, owners);
-		}		
+		}
+		
+		return filesToApprove;
 	}
 	
 	/**
@@ -194,13 +140,5 @@ public class AuthorsApproval {
 				impactedFile.getImpactedFiles().add(current);
 			}
 		});
-	}
-
-	/**
-	 * Get method to make easier the unit tests of loading files, owners and dependencies relations.
-	 * @return Set<FileSettings> meaning all files and it's owners and related files
-	 */
-	public Set<FileSettings> getFilesToApprove(){
-		return this.filesToApprove;
-	}
+	}	
 }
